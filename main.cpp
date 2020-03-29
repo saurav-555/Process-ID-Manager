@@ -1,14 +1,94 @@
-#include<unistd.h>
 #include<time.h>
 #include<stdio.h>
 #include<stdlib.h>
+#include<pthread.h>
 
+#define MIN 100
+#define MAX 1000
+
+struct node {
+    int data;
+    node *next;
+};
+
+node *front = NULL;
+node *rear = NULL;
+
+void addPid(int x) {
+    node *temp = new node;
+    temp->data = x;
+    temp->next = NULL;
+    if (rear == NULL && front == NULL) {
+        rear = temp;
+        front = temp;
+        return;
+    }
+    rear->next = temp;
+    rear = temp;
+
+}
+
+void remove_pId() {
+    node *temp = front;
+    if (front == NULL)
+        return;
+    if (rear == front) {
+        front = rear = NULL;
+        delete temp;
+        return;
+    }
+    front = temp->next;
+    delete temp;
+}
+
+int is_pId_Available() {
+    if (front == NULL) {
+        return -1;
+    } else
+        return front->data;
+}
+
+void allocate_queue(){
+
+    // initializing pId's in queue range from MIN to MAX
+    for(int i = MIN ; i <= MAX ; i++){
+        addPid(i);
+    }
+
+}
+
+int allocate_pId(){
+
+    // next available pId is front of queue
+
+    int pId = is_pId_Available();
+
+    if(pId == -1){ // queue is empty ..... (no available pId)
+        return -1;
+    }
+    remove_pId(); // if pId is available , pId is removed from the front of the queue
+    return pId;
+
+}
+
+int release_pId(int pId){
+
+    // this pId  available is now returning back to queue
+    addPid(pId);
+
+}
 
 void *timeThread(void *arg){
 
     int threadId = *((int *)arg);
 
-    // allocating pid
+    // getting id
+    int id = allocate_pId();
+    if(id == -1){
+        printf("No Thread Id is Available \n\n");
+
+        pthread_exit(NULL);
+    }
 
     // current date and time calculation
     time_t current_time;
@@ -16,14 +96,14 @@ void *timeThread(void *arg){
     struct tm * timeInfo;
     time (&current_time);
     timeInfo = localtime (&current_time);
-    printf("Thread of Time & Date | Thread Id : %d | Pid : %d \n" , threadId , 0);
+    printf("Thread of Time & Date | Thread Id : %d | Pid : %d \n" , threadId , id);
     printf("%d Hr : %d mm : %d ss | %d / %d / %d \n ", timeInfo ->tm_hour , timeInfo->tm_min , timeInfo->tm_sec , timeInfo->tm_mday , timeInfo->tm_mon , timeInfo->tm_year);
-    printf("\n");
-    // wait random period of time bw 3 to 10 sec
+    printf("\n\n");
 
-    sleep(3 + rand() % 8);
 
-    return NULL;
+    release_pId(id);
+    pthread_exit(NULL);
+
 
 }
 
@@ -31,10 +111,16 @@ void *factorialThread(void * arg){
 
     int threadId = *((int *)arg);
 
-    // allocating pid
+    // getting id
+    int id = allocate_pId();
+    if(id == -1){
+        printf("No Thread Id is Available \n\n");
+
+        pthread_exit(NULL);
+    }
 
     int upto =  rand() % 10 + 1;
-    printf("Thread of Factorial( Random upto %d ) | Thread Id : %d | Pid : %d \n" , upto,  threadId , 0);
+    printf("Thread of Factorial( Random upto %d ) | Thread Id : %d | Pid : %d \n" , upto,  threadId , id);
     printf("Factorial upto %d : ", upto);
 
     int fac = 1;
@@ -44,11 +130,12 @@ void *factorialThread(void * arg){
     }
     printf("\n\n");
 
-    // wait random period of time bw 3 to 10 sec
 
-    sleep(3 + rand() % 8);
 
-    return NULL;
+    release_pId(id);
+    pthread_exit(NULL);
+
+
 
 }
 
@@ -56,10 +143,15 @@ void *fibonacciThread(void * arg){
 
     int threadId = *((int *)arg);
 
-    // allocating pid
+    // getting id
+    int id = allocate_pId();
+    if(id == -1){
+        printf("No Thread Id is Available \n\n");
+        pthread_exit(NULL);
+    }
 
     int upto =  rand() % 10 + 2;
-    printf("Thread of Fibonacci( Random upto %d ) | Thread Id : %d | Pid : %d \n" , upto,  threadId , 0);
+    printf("Thread of Fibonacci( Random upto %d ) | Thread Id : %d | Pid : %d \n" , upto,  threadId , id);
     printf("Fibonacci upto %d : ", upto);
 
     int f0 = 0 , f1 = 1;
@@ -73,19 +165,11 @@ void *fibonacciThread(void * arg){
     }
     printf("\n\n");
 
-    // wait random period of time bw 3 to 10 sec
 
-    sleep(3 + rand() % 8);
+    release_pId(id);
+    pthread_exit(NULL);
 
-    return NULL;
 
-}
-
-void solve() {
-    int i = 5;
-    timeThread((void *)(&i));
-    factorialThread((void *)(&i));
-    fibonacciThread((void *)(&i));
 }
 
 
@@ -94,8 +178,8 @@ int main() {
     srand(time(0));
     int t = 1;
     //cin>>t;
-    while (t--)
-        solve();
-    return 0;
+//    while (t--)
+//        pIdManager();
+//    return 0;
 
 }
