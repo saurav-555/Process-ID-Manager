@@ -100,7 +100,6 @@ void *timeThread(void *arg){
     printf("%d Hr : %d mm : %d ss | %d / %d / %d \n ", timeInfo ->tm_hour , timeInfo->tm_min , timeInfo->tm_sec , timeInfo->tm_mday , timeInfo->tm_mon , timeInfo->tm_year);
     printf("\n\n");
 
-
     release_pId(id);
     pthread_exit(NULL);
 
@@ -129,7 +128,6 @@ void *factorialThread(void * arg){
         printf("%d " , fac);
     }
     printf("\n\n");
-
 
 
     release_pId(id);
@@ -164,11 +162,43 @@ void *fibonacciThread(void * arg){
         f1 = f2;
     }
     printf("\n\n");
-
-
     release_pId(id);
     pthread_exit(NULL);
 
+
+}
+
+void pIdManager() {
+
+    // it initialize the data structure of pId's
+    allocate_queue();
+
+    int no_of_threads;
+    scanf("%d" , &no_of_threads);
+
+    pthread_t thread_id[no_of_threads];
+
+    for(int i = 0 ; i < no_of_threads ; i++){
+        int r = rand() % 3;
+        if(r == 0){
+            pthread_create(&thread_id[i] , NULL, timeThread , (void*)&i);
+        }else if(r == 1){
+            pthread_create(&thread_id[i] , NULL, fibonacciThread , (void*)&i);
+        }else {
+            pthread_create(&thread_id[i] , NULL, factorialThread , (void*)&i);
+        }
+        // waiting a particular thread is completed...
+        clock_t start = clock();
+        while(true){
+            if((double((clock() - start))/CLOCKS_PER_SEC) > 1.5 ){
+                break;
+            }
+        }
+
+    }
+
+    for(int i = 0 ; i < no_of_threads ; i++)
+        pthread_join(thread_id[i] , NULL);
 
 }
 
@@ -178,8 +208,8 @@ int main() {
     srand(time(0));
     int t = 1;
     //cin>>t;
-//    while (t--)
-//        pIdManager();
-//    return 0;
+    while (t--)
+        pIdManager();
+    return 0;
 
 }
