@@ -3,18 +3,18 @@
 #include<stdlib.h>
 #include<pthread.h>
 
-#define MIN 100
-#define MAX 1000
+#define MIN 100     // minimum value of pId
+#define MAX 1000    // maximum value of pId
 
-struct node {
+struct node {       // node of queue data structure
     int data;
     node *next;
 };
 
-node *front = NULL;
+node *front = NULL;         // front and rear ptr of queue
 node *rear = NULL;
 
-void addPid(int x) {
+void addPid(int x) {           // add an element to queue
     node *temp = new node;
     temp->data = x;
     temp->next = NULL;
@@ -28,7 +28,7 @@ void addPid(int x) {
 
 }
 
-void remove_pId() {
+void remove_pId() {                // removes the first element of queue
     node *temp = front;
     if (front == NULL)
         return;
@@ -41,7 +41,7 @@ void remove_pId() {
     delete temp;
 }
 
-int is_pId_Available() {
+int is_pId_Available() {            // get the front value of queue
     if (front == NULL) {
         return -1;
     } else
@@ -78,12 +78,12 @@ int release_pId(int pId){
 
 }
 
-void *timeThread(void *arg){
+void *timeThread(void *arg){    // one of the thread of a process , which shows current date and time
 
     int threadId = *((int *)arg);
 
     // getting id
-    int id = allocate_pId();
+    int id = allocate_pId();                // getting thread Id from queue
     if(id == -1){
         printf("No Thread Id is Available \n\n");
 
@@ -100,18 +100,18 @@ void *timeThread(void *arg){
     printf("%d Hr : %d mm : %d ss | %d / %d / %d \n ", timeInfo ->tm_hour , timeInfo->tm_min , timeInfo->tm_sec , timeInfo->tm_mday , timeInfo->tm_mon , timeInfo->tm_year);
     printf("\n\n");
 
-    release_pId(id);
+    release_pId(id);                        // releasing threadId from queue
     pthread_exit(NULL);
 
 
 }
 
-void *factorialThread(void * arg){
+void *factorialThread(void * arg){       // one of the thread of a process, which find's factorial of random range
 
     int threadId = *((int *)arg);
 
     // getting id
-    int id = allocate_pId();
+    int id = allocate_pId();                 // getting thread Id from queue
     if(id == -1){
         printf("No Thread Id is Available \n\n");
 
@@ -130,19 +130,19 @@ void *factorialThread(void * arg){
     printf("\n\n");
 
 
-    release_pId(id);
+    release_pId(id);                        // releasing threadId from queue
     pthread_exit(NULL);
 
 
 
 }
 
-void *fibonacciThread(void * arg){
+void *fibonacciThread(void * arg){      // one of the thread of a process which , prints fibonacci numbers for a random range
 
     int threadId = *((int *)arg);
 
     // getting id
-    int id = allocate_pId();
+    int id = allocate_pId();            // getting thread Id from queue
     if(id == -1){
         printf("No Thread Id is Available \n\n");
         pthread_exit(NULL);
@@ -162,7 +162,7 @@ void *fibonacciThread(void * arg){
         f1 = f2;
     }
     printf("\n\n");
-    release_pId(id);
+    release_pId(id);                        // releasing threadId from queue
     pthread_exit(NULL);
 
 
@@ -173,13 +173,13 @@ void pIdManager() {
     // it initialize the data structure of pId's
     allocate_queue();
 
-    int no_of_threads;
+    int no_of_threads;                      // no of thread that we want
     scanf("%d" , &no_of_threads);
 
     pthread_t thread_id[no_of_threads];
 
     for(int i = 0 ; i < no_of_threads ; i++){
-        int r = rand() % 3;
+        int r = rand() % 3;                         // giving random thread among above three thread
         if(r == 0){
             pthread_create(&thread_id[i] , NULL, timeThread , (void*)&i);
         }else if(r == 1){
@@ -187,7 +187,7 @@ void pIdManager() {
         }else {
             pthread_create(&thread_id[i] , NULL, factorialThread , (void*)&i);
         }
-        // waiting a particular thread is completed...
+        // waiting a particular thread is to completed...   other wise... each thread output overlap ( we can also comment below to code for see effect of concurrent threads )
         clock_t start = clock();
         while(true){
             if((double((clock() - start))/CLOCKS_PER_SEC) > 1.5 ){
@@ -197,7 +197,7 @@ void pIdManager() {
 
     }
 
-    for(int i = 0 ; i < no_of_threads ; i++)
+    for(int i = 0 ; i < no_of_threads ; i++)   // joining the thread...., with main process
         pthread_join(thread_id[i] , NULL);
 
 }
